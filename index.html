@@ -195,7 +195,7 @@
                 <div class="columns is-centered">
                     <div class="column has-text-centered">
                         <h1 class="title is-0 publication-title">
-                        <img src="./assets/logo.png" alt="Logo" style="max-width: 30px"><span style="color: #FF69B4;">MVP</span><span style="color: #1E90FF;">aint</span>: Synchronized Multi-View Diffusion for Painting Anything 3D <br />
+                        <img src="./assets/logo.png" alt="Logo" style="max-width: 50px"><span style="color: #FF69B4;">MVP</span><span style="color: #1E90FF;">aint</span>: Synchronized Multi-View Diffusion for Painting Anything 3D <br />
                         </h1>
             
                         <div class="is-size-4 publication-authors">
@@ -252,7 +252,7 @@
                                 </span>
                                 <!-- Video Link. -->
                                 <span class="link-block">
-                                    <a href="https://youtu.be/tF9wE4G6Mlg"
+                                    <a href="https://youtu.be/NC5lKd2nY5E"
                                         class="external-link button is-normal is-rounded is-dark">
                                         <span class="icon">
                                             <svg class="svg-inline--fa fa-youtube fa-w-18" aria-hidden="true"
@@ -331,20 +331,22 @@
           <h2 class="title is-2">Abstract</h2>
           <div class="content has-text-justified">
             <p>
-                Texturing is a crucial step in the 3D asset production
-                workflow, which enhances the visual appeal and diversity
-                of 3D assets. Despite recent advancements in generation-
-                based texturing, existing methods often yield subpar results, primarily due to local discontinuities, inconsistencies across multiple views, and their heavy dependence on
-                UV unwrapping outcomes. To tackle these challenges, we
-                propose a novel generation-refinement 3D texturing framework called MVPaint, which can generate high-resolution,
-                seamless textures while emphasizing multi-view consistency. MVPaint mainly consists of three key modules. <b>1)
-                Synchronized Multi-view Generation (SMG)</b>. Given a 3D
-                mesh model, MVPaint first simultaneously generates multi-view images by employing a SMG model, which leads to
-                coarse texturing results with unpainted parts due to missing observations. <b>2) Spatial-aware 3D Inpainting (S3I).</b>
-                To ensure complete 3D texturing, we introduce the S3I
-                method, specifically designed to effectively texture previously unobserved areas. <b>3) UV Refinement (UVR).</b> Furthermore, MVPaint employs a UVR module to improve the
-                texture quality in the UV space, which first performs a UV-space Super-Resolution, followed by a Spatial-aware Seam-Smoothing algorithm for revising spatial texturing discontinuities caused by UV unwrapping. Extensive experimental
-                results demonstrate that MVPaint surpasses existing state-of-the-art methods. Notably, MVPaint could generate high-fidelity textures with minimal Janus issues and highly enhanced cross-view consistency
+              Texturing is a crucial step in the 3D asset production workflow, which enhances the visual appeal and diversity of 3D assets. 
+              Despite recent advancements in Text-to-Texture (T2T) generation, existing methods often yield subpar results, 
+              primarily due to local discontinuities, inconsistencies across multiple views, and their heavy dependence on UV unwrapping outcomes. 
+              To tackle these challenges, we propose a novel generation-refinement 3D texturing framework called MVPaint, 
+              which can generate high-resolution, seamless textures while emphasizing multi-view consistency. 
+              MVPaint mainly consists of three key modules. <b>1) Synchronized Multi-view Generation (SMG).</b> 
+              Given a 3D mesh model, MVPaint first simultaneously generates multi-view images by employing an SMG model, 
+              which leads to coarse texturing results with unpainted parts due to missing observations. 
+              <b>2) Spatial-aware 3D Inpainting (S3I).</b> To ensure complete 3D texturing, we introduce the S3I method, 
+              specifically designed to effectively texture previously unobserved areas. 
+              <b>3) UV Refinement (UVR).</b> Furthermore, MVPaint employs a UVR module to improve the texture quality in the UV space, 
+              which first performs a UV-space Super-Resolution, followed by a Spatial-aware Seam-Smoothing algorithm for revising spatial texturing discontinuities caused by UV unwrapping. 
+              Moreover, we establish two T2T evaluation benchmarks: the Objaverse T2T benchmark and the GSO T2T benchmark, 
+              based on selected high-quality 3D meshes from the Objaverse dataset and the entire GSO dataset, respectively. 
+              Extensive experimental results demonstrate that MVPaint surpasses existing state-of-the-art methods. 
+              Notably, MVPaint could generate high-fidelity textures with minimal Janus issues and highly enhanced cross-view consistency.
             </p>
           </div>
         </div>
