@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="description" content="MVPaint: Synchronized Multi-View Diffusion for Painting Anything 3D">
+    <meta name="keywords" content="Texturing, Diffusion Models, Synchronization">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="google-site-verification" content="STD7CbpZGbnFAizPPZgrpJu7WrW0DQMVRmLU_BeC5WU" />
+    <link rel="shortcut icon" href="./assets/logo.png" type="image/x-icon">
+    <title>MVPaint: Synchronized Multi-View Diffusion for Painting Anything 3D</title>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+    />
+
+    <link rel="stylesheet" href="./static/css/bulma.min.css">
+    <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+    <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+    <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+    <link rel="stylesheet" href="./static/css/index.css">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css"
+    />
+    <link rel="stylesheet" href="./staticcss/index.css" />
+    <link rel="icon" href="./staticimages/test3.png" />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script defer src="./staticjs/fontawesome.all.min.js"></script>
+    <script src="./staticjs/bulma-slider.min.js"></script>
+    <script src="./staticjs/index.js"></script>
+
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <script
+      type="module"
+      src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"
+    ></script>
+    <style>
+        body {
+          margin: auto;
+          font-family: Arial, sans-serif;
+        }
+  
+        nav {
+          position: auto;
+          top: 0;
+          left: 0;
+          width: 100%;
+          background-color: ghostwhite;
+          z-index: 100;
+          box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.3);
+        }
+  
+        nav ul {
+          padding: 0;
+          margin: auto;
+          list-style: none;
+          display: flex;
+          justify-content: center;
+        }
+  
+        nav ul li {
+          margin: auto;
+        }
+  
+        nav ul li a {
+          display: block;
+          padding: 5px;
+          /*      color: #fff;*/
+          text-decoration: none;
+          transition: background-color 0.3s;
+        }
+  
+        nav ul li a:hover {
+          background-color: #555;
+        }
+  
+        /* iframe 容器 */
+        .iframe-container {
+          position: relative;
+          display: inline-block;
+        }
+  
+        /* 提示器 */
+        .tooltip {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          padding: 10px;
+          background-color: #333;
+          color: #fff;
+          font-size: 12px;
+          white-space: nowrap;
+          transform: translate(-50%, -50%);
+          visibility: visible;
+          opacity: 1;
+          transition: visibility 0.2s, opacity 0.2s;
+        }
+  
+        /* 鼠标悬停在 iframe 容器时隐藏提示器 */
+        .iframe-container:hover .tooltip {
+          visibility: hidden;
+          opacity: 0;
+        }
+  
+        .title {
+          font-size: 41px;
+        }
+  
+        /*  teaser font-size  */
+        .teaserTitle {
+          font-size: 76px;
+        }
+  
+        .subTeaserTitle {
+          font-size: 15px;
+        }
+  
+        .carousel-indicators {
+          bottom: -26px;
+        }
+  
+        .carousel-control.left,
+        .carousel-control.right {
+          background-image: none !important;
+          filter: none !important;
+          width: 20px;
+        }
+  
+        .columns {
+          display: flex;
+          flex-wrap: wrap;
+        }
+  
+        .column {
+          flex: 1;
+          min-width: 150px;
+        }
+  
+        .carousel-indicators ol {
+          width: 100%;
+        }
+  
+        .carousel-indicators li {
+          height: 3px !important;
+          border-radius: 0px !important;
+          width: 25%;
+        }
+      </style>
+
+    <style>
+		.render_wrapper {
+			position: relative;
+            height: 300px;
+         }
+        .render_wrapper_small {
+			position: relative;
+            height: 200px;
+         }
+		.render_div {
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+
+        #interpolation-image-wrapper-car{
+            text-align: center;
+        }
+        #interpolation-image-wrapper-chair{
+            text-align: center;
+        }
+        .nested-columns {
+            margin-bottom: 0 !important;
+        }
+    </style>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script defer src="./static/js/fontawesome.all.min.js"></script>
+    <script src="./static/js/bulma-carousel.min.js"></script>
+    <script src="./static/js/bulma-slider.min.js"></script>
+    <script src="./static/js/index.js"></script>
+</head>
+
+<body>
+
+    <section class="hero">
+        <div class="hero-body">
+            <div class="container is-max-desktop">
+                <div class="columns is-centered">
+                    <div class="column has-text-centered">
+                        <h1 class="title is-0 publication-title">
+                        <img src="./assets/logo.png" alt="Logo" style="max-width: 50px"><span style="color: #FF69B4;">MVP</span><span style="color: #1E90FF;">aint</span>: Synchronized Multi-View Diffusion for Painting Anything 3D <br />
+                        </h1>
+            
+                        <div class="is-size-4 publication-authors">
+                            <span class="author-block">
+                                <a href="https://wchengad.github.io/">Wei Cheng</a><sup>1*&dagger;</sup>,</span>
+                            <span class="author-block">
+                                <a href="https://scholar.google.com/citations?user=bVmTK8gAAAAJ&hl=en">Juncheng Mu</a><sup>2,4*</sup>,</span>
+                            <span class="author-block">
+                                <a href="https://scholar.google.com/citations?user=tgDc0fsAAAAJ&hl=en">Xianfang Zeng</a><sup>1</sup>,</span>
+                            <span class="author-block">
+                                <a href="https://chenxin.tech//">Xin Chen</a><sup>1</sup>,
+                            </span>
+                            <span class="author-block">
+                                <a href="https://scholar.google.com/citations?user=9IbbQ10AAAAJ&hl">Anqi Pang</a><sup>1</sup>,
+                            </span>
+                            <span class="author-block">
+                                <a href="https://icoz69.github.io/">Chi Zhang</a><sup>1</sup>,
+                            </span>
+                        </div>
+                        <div class="is-size-4 publication-authors">
+                            <span class="author-block">
+                                <a href="https://openreview.net/profile?id=~Billzb_Wang1">Zhibin Wang</a><sup>1</sup>,</span>
+                            <span class="author-block">
+                                <a href="https://openreview.net/profile?id=~BIN_FU2">Bin Fu</a><sup>1</sup>,</span>
+                            <span class="author-block">
+                                <a href="https://www.skicyyu.org/">Gang Yu</a><sup>1</sup>,</span>
+                            <span class="author-block">
+                                <a href="https://liuziwei7.github.io/">Ziwei Liu</a><sup>3</sup>,
+                            </span>
+                            <span class="author-block">
+                                <a href="https://scholar.google.com/citations?user=lSDISOcAAAAJ&hl=en">Liang Pan</a><sup>2&ddagger;</sup>
+                            </span>
+                        </div>
+                        <div class="is-size-5 publication-authors">
+                            <span class="author-block"><sup>*</sup>Equal Contribution,</span>
+                            <span class="author-block"><sup>&dagger;</sup>Project Lead,</span>
+                            <span class="author-block"><sup>&ddagger;</sup>Correspondence Author</span>
+                        </div>
+                        <div class="is-size-5 publication-authors">
+                            <span class="author-block"><sup>1</sup>Tencent PCG,</span>
+                            <span class="author-block"><sup>2</sup>Shanghai AI Laboratory,</span>
+                            <span class="author-block"><sup>3</sup>S-Lab, NTU,</span>
+                            <span class="author-block"><sup>4</sup>Tsinghua University</span>
+                        </div>
+                        <div class="column has-text-centered">
+                            <div class="publication-links">
+                                <span class="link-block">
+                                    <a class="external-link button is-normal is-rounded is-dark" href="https://arxiv.org/abs/2411.02336">
+                                        <span class="icon">
+                                            <i class="ai ai-arxiv"></i>
+                                        </span>
+                                        <span>arXiv</span>
+                                    </a>
+                                </span>
+                                <!-- Video Link. -->
+                                <span class="link-block">
+                                    <a href="https://youtu.be/NC5lKd2nY5E"
+                                        class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon">
+                                            <svg class="svg-inline--fa fa-youtube fa-w-18" aria-hidden="true"
+                                                focusable="false" data-prefix="fab" data-icon="youtube" role="img"
+                                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"
+                                                data-fa-i2svg="">
+                                                <path fill="currentColor"
+                                                    d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 41.5 48.284 47.821C117.22 448 288 448 288 448s170.78 0 213.371-11.486c23.497-6.321 42.003-24.171 48.284-47.821 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z">
+                                                </path>
+                                            </svg><!-- <i class="fab fa-youtube"></i> Font Awesome fontawesome.com -->
+                                        </span>
+                                        <span>Video</span>
+                                    </a>
+                                </span>
+
+
+                                <!-- Github Link. -->
+                                <span class="link-block">
+                                    <a href="https://github.com/3DTopia/MVPaint" class="external-link button is-normal is-rounded is-dark">
+                                        <span class="icon">
+                                            <i class="fab fa-github" style="color: white;"></i>
+                                        </span>
+                                        <span>Code</span>
+                                        <span class="icon">
+                                          <img src="./assets/soon.png" alt="Soon Icon" style="width: 20px; height: 20px; filter: invert(100%);">
+                                      </span>
+                                    </a>
+                                </span>
+                                <!-- Weights Link. -->
+                                <span class="link-block">
+                                    <a href="https://huggingface.co" class="external-link button is-normal is-rounded" title="Coming Soon" style="background-color: gray; color: white;">
+                                        <span class="icon">
+                                            <img src="https://huggingface.co/front/assets/huggingface_logo.svg" alt="Hugging Face Logo" style="width: 20px; height: 20px; filter: grayscale(100%);">
+                                        </span>
+                                        <span>Weights</span>
+                                        <span class="icon">
+                                          <img src="./assets/soon.png" alt="Soon Icon" style="width: 20px; height: 20px; filter: invert(100%);">
+                                      </span>
+                                    </a>
+                                </span>
+                                <!-- ComfyUI Link. -->
+                                <span class="link-block">
+                                    <a href="https://github.com/comfyanonymous/ComfyUI" class="external-link button is-normal is-rounded" title="Coming Soon" style="background-color: gray; color: white;">
+                                        <span class="icon">
+                                            <img src="./assets/comfy.svg" alt="ComfyUI Icon" style="width: 20px; height: 20px; filter: grayscale(100%);">
+                                        </span>
+                                        <span>ComfyUI</span>
+                                        <span class="icon">
+                                          <img src="./assets/soon.png" alt="Soon Icon" style="width: 20px; height: 20px; filter: invert(100%);">
+                                      </span>
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- 3.1 Banner -->
+    <section class="section">
+        <div class="container is-max-desktop">
+            <div class="columns is-centered has-text-centered" style="margin-top: -20px">
+            <video src="./assets/demo.mp4" width="100%" autoplay loop muted playsinline></video>
+            </div>
+
+        </div>
+    </section>
+
+    <section class="section"></section>
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered" style="margin-top: -80px">
+        <div class="column is-four-fifths">
+          <h2 class="title is-2">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Texturing is a crucial step in the 3D asset production workflow, which enhances the visual appeal and diversity of 3D assets. 
+              Despite recent advancements in Text-to-Texture (T2T) generation, existing methods often yield subpar results, 
+              primarily due to local discontinuities, inconsistencies across multiple views, and their heavy dependence on UV unwrapping outcomes. 
+              To tackle these challenges, we propose a novel generation-refinement 3D texturing framework called MVPaint, 
+              which can generate high-resolution, seamless textures while emphasizing multi-view consistency. 
+              MVPaint mainly consists of three key modules. <b>1) Synchronized Multi-view Generation (SMG).</b> 
+              Given a 3D mesh model, MVPaint first simultaneously generates multi-view images by employing an SMG model, 
+              which leads to coarse texturing results with unpainted parts due to missing observations. 
+              <b>2) Spatial-aware 3D Inpainting (S3I).</b> To ensure complete 3D texturing, we introduce the S3I method, 
+              specifically designed to effectively texture previously unobserved areas. 
+              <b>3) UV Refinement (UVR).</b> Furthermore, MVPaint employs a UVR module to improve the texture quality in the UV space, 
+              which first performs a UV-space Super-Resolution, followed by a Spatial-aware Seam-Smoothing algorithm for revising spatial texturing discontinuities caused by UV unwrapping. 
+              Moreover, we establish two T2T evaluation benchmarks: the Objaverse T2T benchmark and the GSO T2T benchmark, 
+              based on selected high-quality 3D meshes from the Objaverse dataset and the entire GSO dataset, respectively. 
+              Extensive experimental results demonstrate that MVPaint surpasses existing state-of-the-art methods. 
+              Notably, MVPaint could generate high-fidelity textures with minimal Janus issues and highly enhanced cross-view consistency.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+        <!-- 3.2 Image-to-Texture Results -->
+        <section class="hero" id="teaser" style="margin-bottom: 50px; margin-top: 50px;">
+            <div class="container is-max-desktop">
+            <!-- Overview. -->
+            <div class="columns is-centered" style="margin-top: 15px">
+                <div class="column is-full-width">
+                    <h2 class="title is-4">Method Overview</h2>
+                    <div class="columns is-centered" style="text-align: center">
+                        <div class="column" style="align-self: center">
+                            <img src="./assets/pipeline.jpg" alt="sequencing_small">
+                        </div>
+                    </div>
+                    <div class="content has-text-justified" style="padding-top: 15px">
+                        Given an input mesh, Stage 1 of MVPaint utilizes a synchronized multi-view generation (SMG) model, consisting of a control-based T2MV model and an I2I model, for 3D texture initialization. In Stage 2, the synchronized
+                        views are reprojected back to UV space, where inpainting is performed on the 3D point cloud to fill the holes (shown in red dots), hence
+                        completing the UV map. In Stage 3, the completed UV map undergoes super-resolution, adding finer details, followed by seam detection
+                        and 3D-aware smoothing to achieve a complete, seamless, and multi-view consistent 3D texture
+                    </div>
+                </div>
+            </div>
+            <h3 class="title is-4">Gallery on GSO Benchmark</h3>
+              <div class="columns is-mobile is-centered">
+                <div class="rows is-mobile is-centered">
+                  <div class="row is-mobile is-centered">
+                    <div class="columns is-mobile is-centered">
+      
+                      <div class="column is-mobile is-centered">
+                        <div class="row is-mobile is-centered">
+                          <model-viewer
+                            style="height: 250px; width: 300px"
+                            rotation-per-second="60deg"
+                            id="t1"
+                            src="./glbs/Playmates_Industrial_CoSplinter_Teenage_Mutant_Ninja_Turtle_Action_Figure.glb"
+                            environment-image="neutral"
+                            camera-target="0m 0m 0m"
+                            orientation="0deg 0deg 180deg"
+                            shadow-intensity="1"
+                            ar:true
+                            auto-rotate
+                            camera-controls
+                          >
+                          </model-viewer>
+                        </div>
+                      </div>
+      
+                      <div class="column is-mobile is-centered">
+                        <div class="row is-mobile is-centered">
+                          <model-viewer
+                            style="height: 250px; width: 300px"
+                            rotation-per-second="60deg"
+                            id="t1"
+                            src="./glbs/Guardians_of_the_Galaxy_Galactic_Battlers_Rocket_Raccoon_Figure.glb"
+                            environment-image="neutral"
+                            camera-target="0m 0m 0m"
+                            orientation="0deg 0deg 180deg"
+                            shadow-intensity="1"
+                            ar:true
+                            auto-rotate
+                            camera-controls
+                          >
+                          </model-viewer>
+                        </div>
+                      </div>
+      
+                      <div class="column is-mobile is-centered">
+                        <div class="row is-mobile is-centered">
+                          <model-viewer
+                            style="height: 250px; width: 300px"
+                            rotation-per-second="60deg"
+                            id="t1"
+                            src="./glbs/Schleich_S_Bayala_Unicorn_70432.glb"
+                            environment-image="neutral"
+                            camera-target="0m 0m 0m"
+                            orientation="0deg 0deg 180deg"
+                            shadow-intensity="1"
+                            ar:true
+                            auto-rotate
+                            camera-controls
+                          >
+                          </model-viewer>
+                        </div>
+                      </div>
+      
+                      <div class="column is-mobile is-centered">
+                        <div class="row is-mobile is-centered">
+                          <model-viewer
+                            style="height: 250px; width: 300px"
+                            rotation-per-second="60deg"
+                            id="t1"
+                            src="./glbs/Ortho_Forward_Facing.glb"
+                            environment-image="neutral"
+                            camera-target="0m 0m 0m"
+                            orientation="0deg 0deg 180deg"
+                            shadow-intensity="1"
+                            ar:true
+                            auto-rotate
+                            camera-controls
+                          >
+                          </model-viewer>
+                        </div>
+                      </div>
+      
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+
+    <!-- 3.2 Image-to-Texture Results -->
+    <section class="hero" id="teaser">
+        <div class="container is-max-desktop" style="margin-top: 30px;">
+        <h3 class="title is-4">Gallery on Objaverse Benchmark</h3>
+          <div class="columns is-mobile is-centered">
+            <div class="rows is-mobile is-centered">
+              <div class="row is-mobile is-centered">
+                <div class="columns is-mobile is-centered">
+  
+                  <div class="column is-mobile is-centered">
+                    <div class="row is-mobile is-centered">
+                      <model-viewer
+                        style="height: 250px; width: 300px"
+                        rotation-per-second="60deg"
+                        id="t1"
+                        src="./glbs/0dc46aaf127f4425a92d1b16aaf6c82b.glb"
+                        environment-image="neutral"
+                        camera-target="0m 0m 0m"
+                        orientation="0deg 0deg 180deg"
+                        shadow-intensity="1"
+                        ar:true
+                        auto-rotate
+                        camera-controls
+                      >
+                      </model-viewer>
+                    </div>
+                  </div>
+  
+                  <div class="column is-mobile is-centered">
+                    <div class="row is-mobile is-centered">
+                      <model-viewer
+                        style="height: 250px; width: 300px"
+                        rotation-per-second="60deg"
+                        id="t1"
+                        src="./glbs/01b6ab639ac947e78bcf34e029359ffe.glb"
+                        environment-image="neutral"
+                        camera-target="0m 0m 0m"
+                        orientation="0deg 0deg 180deg"
+                        shadow-intensity="1"
+                        ar:true
+                        auto-rotate
+                        camera-controls
+                      >
+                      </model-viewer>
+                    </div>
+                  </div>
+  
+                  <div class="column is-mobile is-centered">
+                    <div class="row is-mobile is-centered">
+                      <model-viewer
+                        style="height: 250px; width: 300px"
+                        rotation-per-second="60deg"
+                        id="t1"
+                        src="./glbs/1fd387f3e7dc4775b5d76fdb5f4054c8.glb"
+                        environment-image="neutral"
+                        camera-target="0m 0m 0m"
+                        orientation="0deg 0deg 180deg"
+                        shadow-intensity="1"
+                        ar:true
+                        auto-rotate
+                        camera-controls
+                      >
+                      </model-viewer>
+                    </div>
+                  </div>
+  
+                  <div class="column is-mobile is-centered">
+                    <div class="row is-mobile is-centered">
+                      <model-viewer
+                        style="height: 250px; width: 300px"
+                        rotation-per-second="60deg"
+                        id="t1"
+                        src="./glbs/9ad1a20ac45b4c7aa329c6d4a649abe5.glb"
+                        environment-image="neutral"
+                        camera-target="0m 0m 0m"
+                        orientation="0deg 0deg 180deg"
+                        shadow-intensity="1"
+                        ar:true
+                        auto-rotate
+                        camera-controls
+                      >
+                      </model-viewer>
+                    </div>
+                  </div>
+  
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="collapseOne" class="panel-collapse collapse">
+            <div class="panel-body">
+                <div class="columns is-mobile is-centered">
+                    <div class="rows is-mobile is-centered">
+                    <div class="row is-mobile is-centered">
+                        <div class="columns is-mobile is-centered">
+        
+                        <div class="column is-mobile is-centered">
+                            <div class="row is-mobile is-centered">
+                            <model-viewer
+                                style="height: 250px; width: 300px"
+                                rotation-per-second="60deg"
+                                id="t1"
+                                src="./glbs/3d77edacdfbc4419a8390ee4165004d6.glb"
+                                environment-image="neutral"
+                                camera-target="0m 0m 0m"
+                                orientation="0deg 0deg 180deg"
+                                shadow-intensity="1"
+                                ar:true
+                                auto-rotate
+                                camera-controls
+                            >
+                            </model-viewer>
+                            </div>
+                        </div>
+        
+                        <div class="column is-mobile is-centered">
+                            <div class="row is-mobile is-centered">
+                            <model-viewer
+                                style="height: 250px; width: 300px"
+                                rotation-per-second="60deg"
+                                id="t1"
+                                src="./glbs/4616b66f92d542b58fd8decc7c13d020.glb"
+                                environment-image="neutral"
+                                camera-target="0m 0m 0m"
+                                orientation="0deg 0deg 180deg"
+                                shadow-intensity="1"
+                                ar:true
+                                auto-rotate
+                                camera-controls
+                            >
+                            </model-viewer>
+                            </div>
+                        </div>
+        
+                        <div class="column is-mobile is-centered">
+                            <div class="row is-mobile is-centered">
+                            <model-viewer
+                                style="height: 250px; width: 300px"
+                                rotation-per-second="60deg"
+                                id="t1"
+                                src="./glbs/5e5a725a9289443288c056db197a5880.glb"
+                                environment-image="neutral"
+                                camera-target="0m 0m 0m"
+                                orientation="0deg 0deg 180deg"
+                                shadow-intensity="1"
+                                ar:true
+                                auto-rotate
+                                camera-controls
+                            >
+                            </model-viewer>
+                            </div>
+                        </div>
+        
+                        <div class="column is-mobile is-centered">
+                            <div class="row is-mobile is-centered">
+                            <model-viewer
+                                style="height: 250px; width: 300px"
+                                rotation-per-second="60deg"
+                                id="t1"
+                                src="./glbs/9b1645f5b19c499aaaf2fb0037894278.glb"
+                                environment-image="neutral"
+                                camera-target="0m 0m 0m"
+                                orientation="0deg 0deg 180deg"
+                                shadow-intensity="1"
+                                ar:true
+                                auto-rotate
+                                camera-controls
+                            >
+                            </model-viewer>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+        
+                <div class="columns is-mobile is-centered">
+                    <div class="rows is-mobile is-centered">
+                    <div class="row is-mobile is-centered">
+                        <div class="columns is-mobile is-centered">
+        
+                        <div class="column is-mobile is-centered">
+                            <div class="row is-mobile is-centered">
+                            <model-viewer
+                                style="height: 250px; width: 300px"
+                                rotation-per-second="60deg"
+                                id="t1"
+                                src="./glbs/9b46e54611c543f3aeeacd2580994c34.glb"
+                                environment-image="neutral"
+                                camera-target="0m 0m 0m"
+                                orientation="0deg 0deg 180deg"
+                                shadow-intensity="1"
+                                ar:true
+                                auto-rotate
+                                camera-controls
+                            >
+                            </model-viewer>
+                            </div>
+                        </div>
+        
+                        <div class="column is-mobile is-centered">
+                            <div class="row is-mobile is-centered">
+                            <model-viewer
+                                style="height: 250px; width: 300px"
+                                rotation-per-second="60deg"
+                                id="t1"
+                                src="./glbs/9cf9da6809894cae9377ae94b1d4256b.glb"
+                                environment-image="neutral"
+                                camera-target="0m 0m 0m"
+                                orientation="0deg 0deg 180deg"
+                                shadow-intensity="1"
+                                ar:true
+                                auto-rotate
+                                camera-controls
+                            >
+                            </model-viewer>
+                            </div>
+                        </div>
+        
+                        <div class="column is-mobile is-centered">
+                            <div class="row is-mobile is-centered">
+                            <model-viewer
+                                style="height: 250px; width: 300px"
+                                rotation-per-second="60deg"
+                                id="t1"
+                                src="./glbs/0ff317f626ba48f6931d7bd8118a91fc.glb"
+                                environment-image="neutral"
+                                camera-target="0m 0m 0m"
+                                orientation="0deg 0deg 180deg"
+                                shadow-intensity="1"
+                                ar:true
+                                auto-rotate
+                                camera-controls
+                            >
+                            </model-viewer>
+                            </div>
+                        </div>
+        
+                        <div class="column is-mobile is-centered">
+                            <div class="row is-mobile is-centered">
+                            <model-viewer
+                                style="height: 250px; width: 300px"
+                                rotation-per-second="60deg"
+                                id="t1"
+                                src="./glbs/3f89ba2899194ed2beb521e637e9a0a1.glb"
+                                environment-image="neutral"
+                                camera-target="0m 0m 0m"
+                                orientation="0deg 0deg 180deg"
+                                shadow-intensity="1"
+                                ar:true
+                                auto-rotate
+                                camera-controls
+                            >
+                            </model-viewer>
+                            </div>
+                        </div>
+
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+          <div class="columns is-mobile is-centered">
+            <button
+              class="btn btn-primary"
+              type="button"
+              data-toggle="collapse"
+              data-target="#collapseOne"
+              href="#collapseOne"
+            >
+              More (click again to show less)
+            </button>
+        </div>
+        </div>
+      </section>
+      <script type="text/javascript">
+        $(function () {
+        $("#collapseOne").collapse("hide");
+        });
+
+    </script>
+
+
+
+
+    <section class="section">
+        <div class="container is-max-desktop"  style="margin-top: 30px;">
+            <h3 class="title is-4">Comparison with Baselines</h3>
+            <div>
+                <section class="section" style="overflow:hidden">
+                    <div class="container">
+                        <div id="post_images" class="carousel">
+                            <div class="item-1">
+                                <video poster="" autoplay="" muted loop="" style="pointer-events: none;">
+                                    <source src="./assets/compare_demo_1.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                            <div class="item-2">
+                                <video poster="" autoplay="" muted loop="" style="pointer-events: none;">
+                                    <source src="./assets/compare_demo_2.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                            <div class="item-3">
+                                <video poster="" autoplay="" muted loop="" style="pointer-events: none;">
+                                    <source src="./assets/compare_demo_3.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                            <div class="item-4">
+                                <video poster="" autoplay="" muted loop="" style="pointer-events: none;">
+                                    <source src="./assets/compare_demo_4.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                            <div class="item-5">
+                                <video poster="" autoplay="" muted loop="" style="pointer-events: none;">
+                                    <source src="./assets/compare_demo_5.mp4" type="video/mp4">
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <script src="https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.3/dist/js/bulma-carousel.min.js"></script>
+                <script>
+                    bulmaCarousel.attach('#post_images', {
+                          slidesToScroll: 1,
+                          slidesToShow: 1,
+                          loop: true,
+                    });
+                </script>
+            </div>
+
+            <div class="columns is-centered" style="margin-top: 20px">
+                <div class="column is-full-width">
+                    <h2 class="title is-4">Generation Versatility</h2>
+                    <div class="content has-text-justified">
+                        <p>
+                            We use GPT4 to generate random prompts and these prompts are applied to the same unicorn model in GSO benchmark.
+                        </p>
+                    </div>
+                    <div class="columns is-centered">
+                        <div style="display: flex; height: 600px; justify-content: center;">
+                            <video poster="" autoplay="" muted="" loop="" style="pointer-events: none;">
+                                <source src="./assets/diversity.mp4" type="video/mp4">
+                            </video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <br>
+            <div class="columns is-centered">
+                <div class="column is-full-width">
+                    <h2 class="title is-3">Related Links</h2>
+
+                    <div class="content has-text-justified">
+                        <p>
+                            We thank the following excellent open-source works:
+                        </p>
+                        <p>
+                            <a href="https://mv-dream.github.io/">MVDream</a>: generates multi-view images with 3D attention, a controlled version can generate texture without Janus problem.
+                        </p>
+                        <p></p>
+                            <a href="https://texturepaper.github.io/TEXTurePaper/">TEXTure</a>: can generate textures with text and image prompt in iterative manner.
+                        </p>
+                        <p>
+                            <a href="https://github.com/LIU-Yuxin/SyncMVD">SyncMVD</a>: generates high-fidelity textures by synchronizing multiple "single" view diffusion on UV latent spaces.
+                        </p>
+                        <p>
+                            <a href="https://paint3d.github.io/">Paint3D</a>: can either generate or inpaint the texture map by a positon map controlled diffusion model.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+              <!--/ Concurrent Work. -->
+              <div class="columns is-centered">
+              <div class="column is-full-width">
+                <h2 class="title is-3">Acknowledgements</h2>
+  
+                <div class="content has-text-justified">
+                    <p>
+                      We thank the following colleagues for the discussion and proofreading:
+                        <a href="https://ch3cook-fdu.github.io/">Sijin Chen</a>, 
+                        <a>Xiangzi Hu</a>, 
+                        <a href="https://scholar.google.com/citations?user=oPV20eMAAAAJ">Xuanyang Zhang</a>, 
+                        <a href="https://aoliao12138.github.io/">Liao Wang</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+      </div>
+        </div>
+    </section>
+
+
+
+    <section class="section" id="BibTeX">
+        <div class="container is-max-desktop content">
+            <h2 class="title">BibTeX</h2>
+            <pre>
+<code>
+@article{cheng2024mvpaint,
+  title={MVPaint: Synchronized Multi-View Diffusion for Painting Anything 3D}, 
+  author={Wei Cheng and Juncheng Mu and Xianfang Zeng and Xin Chen and Anqi Pang and Chi Zhang and Zhibin Wang and Bin Fu and Gang Yu and Ziwei Liu and Liang Pan},
+  journal={arXiv preprint arxiv:2411.02336},
+  year={2024}
+}
+</code></pre>
+        </div>
+    </section>
+
+
+    <footer class="footer">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-8">
+                    <div class="content">
+                        <p style="text-align:center">
+                            Source code mainly borrowed from <a href="https://keunhong.com/">Keunhong Park</a>'s <a
+                                href="https://nerfies.github.io/">Nerfies website</a>.
+                        </p>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+
+<!--    <script src="js/index.js"></script>-->
+
+</body>
+
+</html>
